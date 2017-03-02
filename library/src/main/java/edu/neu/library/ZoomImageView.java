@@ -312,12 +312,12 @@ public class ZoomImageView extends ImageView {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
         if (!isOnDraw) {
             init();
             initImage();
             isOnDraw = true;
         }
+        super.onDraw(canvas);
     }
 
     /**
@@ -497,6 +497,7 @@ public class ZoomImageView extends ImageView {
      * 还原到未缩放和拖拽的大小
      */
     public void restore() {
+        Log.d(TAG, "restore");
         if (!isLoaded) {
             return;
         }
@@ -694,41 +695,6 @@ public class ZoomImageView extends ImageView {
         void onAnimatorEnd();
     }
 
-//    AnimatorUpdateListener mAnimationListener = new AnimatorUpdateListener() {
-//
-//        @Override
-//        public void onAnimationUpdate(ValueAnimator animation) {
-//            Float value = (Float) animation.getAnimatedValue();
-//            mCurrentMatrix.set(mSaveMatrix);
-//            getInitPoint(midPoint);
-//            if (scale != 1) {
-//                float mScale = 1 + (scale - 1) * value;
-//                mCurrentMatrix.postScale(mScale, mScale, midPoint.x, midPoint.y);
-//            }
-//            mCurrentMatrix.postTranslate(tranX * value, tranY * value);
-//            setImageMatrix(mCurrentMatrix);
-//            if (value == 1f) {// 动画结束
-//                isAnimating = false;
-//                isNarrowing = false;
-//                tranX = 0;
-//                tranY = 0;
-//                scale = 1;
-//                getSizeMode();
-//                if (sizeMode == NONE) {
-//                    interruptParent();
-//                } else {
-//                    if (isJudgeInterrputTouch && !isEnlargeOrRestore) {
-//                        interruptParent();
-//                    } else {
-//                        notInterruptParent();
-//                    }
-//                }
-//                isEnlargeOrRestore = false;
-//            }
-//        }
-//
-//    };
-
     /**
      * 拖动图片,进入拖拽模式，水平必定可拖动，竖直需要判断
      *
@@ -752,23 +718,33 @@ public class ZoomImageView extends ImageView {
             tranX = 0;
         }
         mCurrentMatrix.postTranslate(tranX, tranY);
-        setImageMatrix(mCurrentMatrix);
+
         // 判断是否拦截事件，当拖动到边界的时候不拦截
         getWidthAndHeight(mCurrentMatrix);
         mCurrentMatrix.getValues(values);
         float mTranX = values[Matrix.MTRANS_X];
         boolean ableToTurnLeft = mTranX > 3 && isInterruptLeft;
         boolean ableToTurnRight = Math.abs(mTranX) > Math.abs(mImageWidth - mViewWidth) + 3 && isInterruptRight;
-        if (ableToTurnLeft || ableToTurnRight) {
-            setInterrupt(false);
+        Log.d(TAG, "mTranX:" + mTranX);
+        Log.d(TAG, "mImageWidth:" + mImageWidth);
+        Log.d(TAG, "mViewWidth:" + mViewWidth);
+        //将滑动控制权返回给父view同时调整位置
+        if (ableToTurnLeft) {
+            Log.d(TAG, "Interrupt");
             isJudgeInterrputTouch = true;
-            Log.d("fiend2", "dragImage-interruptParent");
+            values[Matrix.MTRANS_X] = 0;
+            setInterrupt(false);
+            mCurrentMatrix.setValues(values);
+        } else if (ableToTurnRight) {
+            Log.d(TAG, "Interrupt");
+            isJudgeInterrputTouch = true;
+            values[Matrix.MTRANS_X] = mViewWidth - mImageWidth;
+            mCurrentMatrix.setValues(values);
+            setInterrupt(false);
         } else {
-//            setInterrupt(true);
             isJudgeInterrputTouch = false;
-            Log.d("fiend2", "dragImage-notInterruptParent");
         }
-
+        setImageMatrix(mCurrentMatrix);
         // 记录上一次移动的位置
         lastTranX = tranX;
         lastTranY = tranY;
