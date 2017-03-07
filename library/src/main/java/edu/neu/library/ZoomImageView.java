@@ -19,9 +19,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+/**
+ * @author lihanguang
+ */
 public class ZoomImageView extends ImageView {
     /**
-     * 父viewpager
+     * 父ViewGroup
      */
     private ViewGroup parent;
     /**
@@ -518,13 +521,7 @@ public class ZoomImageView extends ImageView {
             tranX = mTargetTranX - mCurrentTranX;
             tranY = mTargetTranY - mCurrentTranY;
             // startAnimator();
-            startAnimator(tranX, tranY, scale, new OnAnimatorEnd() {
-
-                @Override
-                public void onAnimatorEnd() {
-//                    interruptParent();// 返回原大后可以执行viewpager的操作
-                }
-            });
+            startAnimator(tranX, tranY, scale, null);
         }
     }
 
@@ -548,7 +545,6 @@ public class ZoomImageView extends ImageView {
 
                 @Override
                 public void onAnimatorEnd() {
-//                    notInterruptParent();
                     mode = ENLARGE;
                 }
             });
@@ -603,23 +599,7 @@ public class ZoomImageView extends ImageView {
         }
         isAfter = true;
         // startAnimator();
-        startAnimator(tranX, tranY, scale, new OnAnimatorEnd() {
-
-            @Override
-            public void onAnimatorEnd() {
-                getSizeMode();
-//                if (sizeMode == NONE) {
-//                    interruptParent();
-//                } else if (sizeMode == ENLARGE) {
-//                    if (isJudgeInterrputTouch) {
-//                        interruptParent();
-//                    } else {
-//                        notInterruptParent();
-//                    }
-//                }
-//                isEnlargeOrRestore = false;
-            }
-        });
+        startAnimator(tranX, tranY, scale, null);
     }
 
     /**
@@ -679,9 +659,9 @@ public class ZoomImageView extends ImageView {
                 mZoomImageView.scale = 1;
                 if (end != null) {
                     end.onAnimatorEnd();
-                    mZoomImageView = null;
                 }
             }
+            mZoomImageView = null;
         }
 
     }
